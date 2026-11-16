@@ -1,0 +1,23 @@
+source_pair,measure,compared,agree,agree_rate,note
+IRS e-file vs IRS SOI extract,revenue,1987,1977,0.9949672873678913,same EIN and fiscal period; tolerance 1%
+IRS e-file vs IRS SOI extract,expenses,1987,1978,0.9954705586311021,same EIN and fiscal period; tolerance 1%
+IRS e-file vs IRS SOI extract,assets,1987,1977,0.9949672873678913,same EIN and fiscal period; tolerance 1%
+IRS e-file vs IRS SOI extract,fiscal period found,2000,1987,0.9935,SOI record for the same fiscal period
+IRS e-file vs IRS BMF,revenue (same period only),30,29,0.9666666666666667,BMF shows the same period for 2% of orgs only
+IRS e-file vs IRS BMF,BMF period is more recent,2000,1969,0.9845,share of orgs where a newer return already exists
+IRS e-file vs ProPublica,fiscal period found,160,76,0.475,158 of 160 orgs returned filing data
+IRS e-file vs ProPublica,revenue,76,74,0.9736842105263158,same EIN and fiscal period; tolerance 1%
+IRS e-file vs ProPublica,expenses,76,74,0.9736842105263158,same EIN and fiscal period; tolerance 1%
+IRS e-file vs ProPublica,assets,76,74,0.9736842105263158,same EIN and fiscal period; tolerance 1%
+IRS e-file vs ProPublica,liabilities,76,74,0.9736842105263158,same EIN and fiscal period; tolerance 1%
+Dataset vs original return (manual sample),fields matching,270,270,1.0,30 returns x 9 fields
+Dataset vs original return (manual sample),returns fully matching,30,30,1.0,
+EPA GHGRP vs Climate TRACE,emissions within ±10%,1066,423,0.3968105065666041,"power plants, 2023, CO2e"
+EPA GHGRP vs Climate TRACE,emissions within ±25%,1066,653,0.6125703564727955,"power plants, 2023, CO2e"
+EPA GHGRP vs Climate TRACE,emissions within ±50%,1066,845,0.7926829268292683,"power plants, 2023, CO2e"
+EPA GHGRP vs Climate TRACE,parent vs owner name similarity >= 50,1069,638,0.5968194574368568,EPA ultimate parent vs Climate TRACE owner
+EPA GHGRP vs Climate TRACE,EPA plants with a Climate TRACE asset within 2 km,1091,1071,0.9816681943171403,
+SBTi vs EPA-reported emissions,top-300 emitters found in SBTi,300,26,0.08666666666666667,name match after manual review
+SBTi vs EPA-reported emissions,validated target and emissions not up >10%,18,18,1.0,"2021 -> 2023, US direct emissions only"
+SEC vs EPA (company identity),top-300 emitters matched to an SEC filer,300,110,0.36666666666666664,"others: private, cooperative, municipal or foreign"
+UK register vs annual return,latest income,440,440,1.0,exact match

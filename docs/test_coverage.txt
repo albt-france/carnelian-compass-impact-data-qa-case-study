@@ -1,0 +1,12 @@
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.13.2-final-0 _______________
+Name                      Stmts   Miss  Cover
+---------------------------------------------
+src\dq\__init__.py            0      0   100%
+src\dq\engine.py             50      0   100%
+src\dq\rules_py.py           15      0   100%
+src\scoring\__init__.py       0      0   100%
+src\scoring\engine.py       115      1    99%
+---------------------------------------------
+TOTAL                       180      1    99%
+129 passed in 22.96s

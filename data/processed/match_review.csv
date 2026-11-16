@@ -1,0 +1,31 @@
+company_id,target,decision,reason
+C008,sec,reject,different company (KVH Industries is not Koch Industries; Koch is private)
+C023,sec,accept,same group; legal suffix N.V. only
+C059,sec,reject,different company (Mexco Energy)
+C104,sec,reject,different company (SunCoke Energy is not Suncor Energy)
+C105,sec,reject,different company (CPS Energy is a municipal utility; CMS Energy is another utility)
+C108,sec,reject,different company (Novanta is not Covanta)
+C126,sec,accept,same entity; abbreviation ASSOC vs ASSOCIATION
+C174,sec,reject,different company (ArcLight Capital is not Arch Capital)
+C194,sec,accept,same company; SEC name carries a state suffix /DE
+C214,sec,reject,different company (DT Midstream is not DCP Midstream)
+C225,sec,reject,different company (OGE Energy is not MGE Energy)
+C244,sec,accept,listed parent of the reporting subsidiary (Venture Global LNG -> Venture Global Inc)
+C290,sec,reject,name over-normalised to a single generic word; needs research
+C023,sbti,accept,same group
+C032,sbti,reject,different company
+C065,sbti,reject,different company (CCL Industries is not CF Industries)
+C076,sbti,accept,same company (PSEG)
+C078,sbti,reject,different company (SPIE is not Spire)
+C137,sbti,reject,different company
+C143,sbti,reject,different company
+C145,sbti,reject,related group entity in another country; not the US reporting entity; needs research
+C153,sbti,reject,different company
+C157,sbti,reject,different company (Ceme Group is not Cemex)
+C160,sbti,reject,different company (Nuco is not Nucor)
+C165,sbti,reject,different company (Ecora Resources is not EOG Resources)
+C173,sbti,reject,different company
+C197,sbti,accept,same group (Heidelberg Materials)
+C261,sbti,reject,different company (Encore is not Glencore)
+C289,sbti,accept,same group (Indorama Ventures)
+C290,sbti,reject,name over-normalised to a single generic word; needs research

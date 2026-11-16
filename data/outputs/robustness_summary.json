@@ -1,0 +1,40 @@
+{
+ "nonprofit": {
+  "scored": 1995,
+  "insufficient": 5,
+  "blocked_real": 62,
+  "tau_median": 0.7880264171358434,
+  "tau_p05": 0.6431208057066331,
+  "mean_abs_rank_change_pts": 8.017901897601146,
+  "share_within_10pts": 0.6829573934837092,
+  "top_decile_overlap": 0.7788944723618091,
+  "injected_records_scored": 175,
+  "injected_median_rank_change_pts": 8.627033984157995,
+  "injected_moved_over_10pts": 79,
+  "injected_blocked_by_gate": 173,
+  "injected_moved_over_10pts_not_blocked": 0,
+  "gate_v1_moved_over_10pts_not_blocked": 0,
+  "gate_v1_blocked": 173,
+  "others_median_rank_change_pts": 0.4618869138744569,
+  "others_moved_over_5pts": 5
+ },
+ "company": {
+  "scored": 293,
+  "insufficient": 7,
+  "blocked_real": 9,
+  "tau_median": 0.8940637347735615,
+  "tau_p05": 0.7882630754483178,
+  "mean_abs_rank_change_pts": 5.343102424023576,
+  "share_within_10pts": 0.8515358361774744,
+  "top_decile_overlap": 0.8275862068965517,
+  "injected_records_scored": 20,
+  "injected_median_rank_change_pts": 36.17747440273037,
+  "injected_moved_over_10pts": 15,
+  "injected_blocked_by_gate": 20,
+  "injected_moved_over_10pts_not_blocked": 0,
+  "gate_v1_moved_over_10pts_not_blocked": 15,
+  "gate_v1_blocked": 0,
+  "others_median_rank_change_pts": 1.3651877133105894,
+  "others_moved_over_5pts": 21
+ }
+}

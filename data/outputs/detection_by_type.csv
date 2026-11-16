@@ -1,0 +1,11 @@
+error_type,label,tables,injected,detected,recall,designed_rules,new_alerts_designed_rules,precision,baseline_alerts_real_data
+parent_mismatch,Wrong parent company,power,30,18,0.6,ACC-07,18,1.0,431
+currency,GBP treated as USD,uk,30,26,0.8666666666666667,VAL-07,26,1.0,0
+signs,Negative amounts,"uk, us",30,29,0.9666666666666667,"VAL-01, VAL-02, VAL-06, VAL-08",29,1.0,11
+missing_small,Missing (small orgs),us,30,29,0.9666666666666667,COMP-02,29,1.0,0
+stale,Stale filing used,"uk, us",30,29,0.9666666666666667,"FRESH-01, FRESH-03",29,1.0,26
+duplicates,Duplicates,"uk, us",30,30,1.0,"UNIQ-01, UNIQ-03",60,1.0,63
+fiscal_year,Fiscal year shifted,us,30,30,1.0,"VAL-05, ACC-04",100,1.0,10
+outliers_x10,Outliers x10,"companies, us",30,30,1.0,"CONS-04, ACC-01, CONS-08",79,1.0,64
+sums,Parts do not add up,us,30,30,1.0,CONS-01,31,1.0,16
+units,Units (thousands),"companies, us",30,30,1.0,"ACC-01, ACC-02, ACC-03, CONS-09, CONS-08",133,1.0,62

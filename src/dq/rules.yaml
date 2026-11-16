@@ -1,0 +1,375 @@
+# Data-quality rule catalogue. Each rule flags the records that FAIL it.
+# sql: DuckDB WHERE condition on the table; the same logic is coded independently in src/dq/rules_py.py,
+# and tests/test_rules.py checks that both engines flag exactly the same records.
+# severity: error = blocks the score; warning = score kept but shown with a flag; info = context, no block.
+# research: true when a flag needs a human to look at the source document before deciding.
+as_of: "2026-11-16"
+rules:
+  # ---------------------------------------------------------------- COMPLETENESS
+  - id: COMP-01
+    table: us
+    dimension: completeness
+    severity: error
+    field: revenue, expenses, assets
+    description: Core totals (revenue, total expenses, total assets) are present.
+    sql: revenue IS NULL OR expenses IS NULL OR assets IS NULL
+    action: Withhold the score; request the return.
+    research: false
+  - id: COMP-02
+    table: us
+    dimension: completeness
+    severity: error
+    field: exp_program, exp_management, exp_fundraising
+    description: Functional expense split (program / management / fundraising) is present when total expenses are positive.
+    sql: exp_total_p9 > 0 AND (exp_program IS NULL OR exp_management IS NULL OR exp_fundraising IS NULL)
+    action: Withhold efficiency pillar; check Part IX of the original return.
+    research: true
+  - id: COMP-03
+    table: us
+    dimension: completeness
+    severity: warning
+    field: ntee_cd
+    description: NTEE activity code is present (needed for peer-group normalisation).
+    sql: ntee_cd IS NULL
+    action: Normalise against size band only; classify by hand if material.
+    research: false
+  - id: COMP-04
+    table: uk
+    dimension: completeness
+    severity: warning
+    field: latest_income, latest_expenditure
+    description: Latest income and expenditure are present in the register.
+    sql: latest_income IS NULL OR latest_expenditure IS NULL
+    action: Exclude from financial metrics; usually a newly registered charity.
+    research: false
+  - id: COMP-05
+    table: companies
+    dimension: completeness
+    severity: info
+    field: revenue_2023
+    description: Revenue is available (needed for carbon intensity).
+    sql: revenue_2023 IS NULL
+    action: Score without intensity; flag lower coverage (private or non-SEC company).
+    research: false
+  - id: COMP-06
+    table: companies
+    dimension: completeness
+    severity: warning
+    field: co2e_2021
+    description: Emissions for the base year 2021 are available (needed for the trend).
+    sql: co2e_2021 IS NULL OR co2e_2021 = 0
+    action: Score without trend.
+    research: false
+  # ---------------------------------------------------------------- VALIDITY
+  - id: VAL-01
+    table: us
+    dimension: validity
+    severity: error
+    field: expenses, exp_total_p9
+    description: Total expenses are not negative.
+    sql: expenses < 0 OR exp_total_p9 < 0
+    action: Block; check sign convention against the original return.
+    research: true
+  - id: VAL-02
+    table: us
+    dimension: validity
+    severity: error
+    field: assets, liabilities
+    description: Total assets and liabilities are not negative.
+    sql: assets < 0 OR liabilities < 0
+    action: Block; check the balance sheet in the original return.
+    research: true
+  - id: VAL-03
+    table: us
+    dimension: validity
+    severity: warning
+    field: revenue
+    description: Negative total revenue (possible with investment losses, but rare).
+    sql: revenue < 0
+    action: Keep; read Part VIII before scoring stability.
+    research: true
+  - id: VAL-04
+    table: us
+    dimension: validity
+    severity: warning
+    field: period_begin, period_end
+    description: Accounting period lasts 360 to 371 days (short first year or 18-month period otherwise).
+    sql: period_days_calc NOT BETWEEN 360 AND 371
+    action: Annualise flows before computing ratios.
+    research: false
+  - id: VAL-05
+    table: us
+    dimension: validity
+    severity: error
+    field: period_begin
+    description: The period starts in the stated tax year (tax year 2023 = period beginning in 2023).
+    sql: year(period_begin) <> 2023
+    action: Block; re-map the return to its correct tax year.
+    research: false
+  - id: VAL-06
+    table: uk
+    dimension: validity
+    severity: error
+    field: latest_income, latest_expenditure
+    description: Income and expenditure are not negative.
+    sql: latest_income < 0 OR latest_expenditure < 0
+    action: Block; check the accounts.
+    research: true
+  - id: VAL-07
+    table: uk
+    dimension: validity
+    severity: error
+    field: income_usd, expenditure_usd
+    description: USD amounts equal GBP amounts x reference rate (1.28), within 2%.
+    sql: (latest_income > 0 AND abs(income_usd / (latest_income * 1.28) - 1) > 0.02) OR (latest_expenditure > 0 AND abs(expenditure_usd / (latest_expenditure * 1.28) - 1) > 0.02)
+    action: Block; re-run the currency conversion.
+    research: false
+  - id: VAL-08
+    table: companies
+    dimension: validity
+    severity: error
+    field: co2e_2023
+    description: Reported emissions are not negative.
+    sql: co2e_2023 < 0
+    action: Block.
+    research: false
+  - id: VAL-09
+    table: power
+    dimension: validity
+    severity: warning
+    field: epa_co2e
+    description: EPA-reported emissions are positive for a plant that Climate TRACE models.
+    sql: epa_co2e IS NULL OR epa_co2e <= 0
+    action: Check whether the plant was idle or reports under another facility ID.
+    research: true
+  # ---------------------------------------------------------------- CONSISTENCY
+  - id: CONS-01
+    table: us
+    dimension: consistency
+    severity: error
+    field: exp_program + exp_management + exp_fundraising
+    description: Program + management + fundraising = total functional expenses (tolerance $1 or 0.5%).
+    sql: abs(exp_program + exp_management + exp_fundraising - exp_total_p9) > greatest(1, 0.005 * abs(exp_total_p9))
+    action: Block efficiency pillar; check Part IX line 25.
+    research: true
+  - id: CONS-02
+    table: us
+    dimension: consistency
+    severity: error
+    field: exp_total_p9, expenses
+    description: Part IX total expenses = Part I total expenses (tolerance $1 or 0.5%).
+    sql: abs(exp_total_p9 - expenses) > greatest(1, 0.005 * abs(expenses))
+    action: Block; one of the two totals is wrong.
+    research: true
+  - id: CONS-03
+    table: us
+    dimension: consistency
+    severity: error
+    field: assets, liabilities, net_assets
+    description: Assets - liabilities = net assets (tolerance $1 or 1% of assets).
+    sql: abs(assets - liabilities - net_assets) > greatest(1, 0.01 * abs(assets))
+    action: Block financial-health pillar; check the balance sheet.
+    research: true
+  - id: CONS-04
+    table: us
+    dimension: consistency
+    severity: warning
+    field: revenue, revenue_py
+    description: Revenue is within 0.2x to 5x of the prior year reported on the same return.
+    sql: revenue > 0 AND revenue_py > 0 AND (revenue / revenue_py > 5 OR revenue / revenue_py < 0.2)
+    action: Keep but cap the stability metric; look for a merger, capital campaign or unit error.
+    research: true
+  - id: CONS-05
+    table: us
+    dimension: consistency
+    severity: warning
+    field: expenses, revenue
+    description: Expenses are within 0.1x to 10x of revenue.
+    sql: revenue > 0 AND expenses > 0 AND (expenses / revenue > 10 OR expenses / revenue < 0.1)
+    action: Keep; check for a pass-through grant year or an error.
+    research: true
+  - id: CONS-06
+    table: us
+    dimension: consistency
+    severity: warning
+    field: fundraising_exp_p1, exp_fundraising
+    description: Fundraising expenses in Part I (line 16b) = Part IX column D (tolerance $1 or 1%).
+    sql: abs(fundraising_exp_p1 - exp_fundraising) > greatest(1, 0.01 * abs(exp_fundraising))
+    action: Use Part IX; note the inconsistency.
+    research: false
+  - id: CONS-07
+    table: uk
+    dimension: consistency
+    severity: warning
+    field: latest_expenditure, latest_income
+    description: Expenditure is within 0.1x to 10x of income.
+    sql: latest_income > 0 AND latest_expenditure > 0 AND (latest_expenditure / latest_income > 10 OR latest_expenditure / latest_income < 0.1)
+    action: Keep; check the accounts.
+    research: true
+  - id: CONS-08
+    table: companies
+    dimension: consistency
+    severity: warning
+    field: co2e_2023, co2e_2021
+    description: Emissions are within 0.33x to 3x of 2021.
+    sql: co2e_2021 > 0 AND (co2e_2023 / co2e_2021 > 3 OR co2e_2023 / co2e_2021 < 0.33)
+    action: Hold the score until checked; look for an acquisition, divestment or unit error.
+    research: true
+    holds_score: true   # added in v2 of the gate after the injection audit (see METHODOLOGY.md)
+  - id: CONS-09
+    table: companies
+    dimension: consistency
+    severity: warning
+    field: co2e_2023, n_facilities
+    description: Average emissions per facility are at least 25,000 tCO2e (the GHGRP reporting threshold for most sources).
+    sql: co2e_2023 / n_facilities < 25000
+    action: Hold the score until checked; verify units (tonnes vs thousand tonnes) and ownership shares.
+    research: true
+    holds_score: true   # added in v2 of the gate after the injection audit
+  # ---------------------------------------------------------------- UNIQUENESS
+  - id: UNIQ-01
+    table: us
+    dimension: uniqueness
+    severity: error
+    field: ein
+    description: One return per EIN for the tax year.
+    sql: ein IN (SELECT ein FROM t GROUP BY ein HAVING count(*) > 1)
+    action: Keep the latest original or amended return; drop the others.
+    research: false
+  - id: UNIQ-02
+    table: us
+    dimension: uniqueness
+    severity: info
+    field: name
+    description: The same normalised name is used by more than one EIN.
+    sql: name_key IN (SELECT name_key FROM t GROUP BY name_key HAVING count(DISTINCT ein) > 1)
+    action: Check whether these are chapters of one network or homonyms.
+    research: true
+  - id: UNIQ-03
+    table: uk
+    dimension: uniqueness
+    severity: error
+    field: registered_charity_number
+    description: One row per registered charity number.
+    sql: registered_charity_number IN (SELECT registered_charity_number FROM t GROUP BY registered_charity_number HAVING count(*) > 1)
+    action: Keep one row.
+    research: false
+  - id: UNIQ-04
+    table: companies
+    dimension: uniqueness
+    severity: warning
+    field: sec_cik
+    description: One SEC registrant is not matched to two different parent names.
+    sql: sec_cik IN (SELECT sec_cik FROM t WHERE sec_cik IS NOT NULL GROUP BY sec_cik HAVING count(*) > 1)
+    action: Merge the parent names or fix the match.
+    research: true
+  # ---------------------------------------------------------------- FRESHNESS
+  - id: FRESH-01
+    table: us
+    dimension: freshness
+    severity: error
+    field: period_end
+    description: The return ends less than 3 years before the as-of date.
+    sql: years_since_period_end > 3
+    action: Do not use as current; fetch the latest return.
+    research: false
+  - id: FRESH-02
+    table: us
+    dimension: freshness
+    severity: info
+    field: bmf_period_end
+    description: The IRS master file already lists a more recent return than the one used.
+    sql: bmf_period_end > period_end + INTERVAL 31 DAY
+    action: Refresh when the newer return is published in bulk.
+    research: false
+  - id: FRESH-03
+    table: uk
+    dimension: freshness
+    severity: error
+    field: latest_acc_fin_period_end_date
+    description: Latest accounts end less than 3 years before the as-of date.
+    sql: years_since_period_end > 3
+    action: Do not use as current.
+    research: false
+  - id: FRESH-04
+    table: uk
+    dimension: freshness
+    severity: warning
+    field: charity_reporting_status
+    description: The charity is not overdue or in double default on its filings.
+    sql: charity_reporting_status IN ('Submission Overdue', 'Submission Double Default')
+    action: Lower the transparency signal; check the register entry.
+    research: true
+  # ---------------------------------------------------------------- ACCURACY (source agreement)
+  - id: ACC-01
+    table: us
+    dimension: accuracy
+    severity: error
+    field: revenue vs soi_revenue
+    description: E-file revenue = IRS SOI extract revenue for the same organisation (tolerance $1 or 1%).
+    sql: soi_revenue IS NOT NULL AND abs(revenue - soi_revenue) > greatest(1, 0.01 * abs(soi_revenue))
+    action: Block; compare both with the original return.
+    research: true
+  - id: ACC-02
+    table: us
+    dimension: accuracy
+    severity: error
+    field: assets vs soi_assets
+    description: E-file total assets = SOI extract total assets (tolerance $1 or 1%).
+    sql: soi_assets IS NOT NULL AND abs(assets - soi_assets) > greatest(1, 0.01 * abs(soi_assets))
+    action: Block; compare with the original return.
+    research: true
+  - id: ACC-03
+    table: us
+    dimension: accuracy
+    severity: error
+    field: expenses vs soi_expenses
+    description: E-file total expenses = SOI extract total functional expenses (tolerance $1 or 1%).
+    sql: soi_expenses IS NOT NULL AND abs(expenses - soi_expenses) > greatest(1, 0.01 * abs(soi_expenses))
+    action: Block; compare with the original return.
+    research: true
+  - id: ACC-04
+    table: us
+    dimension: accuracy
+    severity: warning
+    field: tax_pd vs soi_tax_pd
+    description: The e-file fiscal period matches the SOI extract fiscal period.
+    sql: soi_tax_pd IS NOT NULL AND tax_pd <> soi_tax_pd
+    action: Re-join on EIN + fiscal period.
+    research: false
+  - id: ACC-05
+    table: uk
+    dimension: accuracy
+    severity: warning
+    field: latest_income vs total_gross_income
+    description: Register income = income in the latest annual return, same period.
+    sql: (total_gross_income IS NOT NULL AND abs(latest_income - total_gross_income) > 1) OR (fin_period_end_date IS NOT NULL AND latest_acc_fin_period_end_date <> fin_period_end_date)
+    action: Use the annual return; report the gap.
+    research: true
+  - id: ACC-06
+    table: power
+    dimension: accuracy
+    severity: warning
+    field: epa_co2e vs ct_co2e
+    description: Climate TRACE estimate is within 0.5x to 1.5x of the EPA-reported emissions.
+    sql: epa_co2e > 0 AND (ct_to_epa_ratio > 1.5 OR ct_to_epa_ratio < 0.5)
+    action: Keep the reported figure; log the model gap.
+    research: true
+  - id: ACC-07
+    table: power
+    dimension: accuracy
+    severity: warning
+    field: epa_parent vs ct_owners
+    description: EPA parent company and Climate TRACE owner share a name (similarity >= 50).
+    sql: parent_owner_similarity < 50
+    action: Check ownership in the EPA parent-company file before attributing emissions.
+    research: true
+  - id: ACC-08
+    table: companies
+    dimension: accuracy
+    severity: info
+    field: sbti_near_term_status, emissions_change
+    description: A company with an SBTi-validated target does not show emissions up more than 10% since 2021.
+    sql: sbti_near_term_status = 'Validated Targets' AND emissions_change > 0.10
+    action: Not an error; a question for engagement (scope, boundary, timing).
+    research: true

@@ -1,0 +1,19 @@
+{
+ "rows": 16018,
+ "duplicate_names": 0,
+ "missing_sector": 0,
+ "missing_location": 0,
+ "near_term_status": {
+  "Validated Targets": 12361,
+  "Commitment to Set Targets": 2070,
+  "Commitment Removed": 1587
+ },
+ "net_zero_status": {
+  "NaN": 10878,
+  "Validated Targets": 2898,
+  "Commitment Removed": 1294,
+  "Commitment to Set Targets": 948
+ },
+ "targets_set_without_year": 0,
+ "usa_rows": 1697
+}

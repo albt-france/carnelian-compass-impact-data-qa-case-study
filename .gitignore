@@ -1,0 +1,13 @@
+# local environment and secrets
+.venv/
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+.tmp/
+.ipynb_checkpoints/
+# large raw downloads and licensed values (rebuilt by src/download_data.py and src/fetch_samples.py)
+data/raw/
+# local working notes
+DECISIONS.md

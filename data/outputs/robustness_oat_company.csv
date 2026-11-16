@@ -1,0 +1,9 @@
+pillar,factor,tau,scores_lost,scores_gained
+carbon_intensity,0.5,0.9135395478244605,0,0
+carbon_intensity,1.5,0.9005838198498747,183,0
+emissions_trend,0.5,0.8597047030666592,0,0
+emissions_trend,1.5,0.9182156133828996,0,0
+climate_target,0.5,0.9354235346379556,0,0
+climate_target,1.5,0.9603002034088517,0,0
+disclosure,0.5,0.9433260854317178,0,0
+disclosure,1.5,0.9462596884012465,0,0

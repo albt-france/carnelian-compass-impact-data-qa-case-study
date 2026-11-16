@@ -1,0 +1,43 @@
+# Demo scoring configuration (illustrative, NOT Carnelian's methodology). Change weights here, not in code.
+nonprofit:
+  pillars:            # pillar weight, then its metrics (direction: higher or lower is better)
+    financial_health:
+      weight: 0.30
+      metrics: {reserves_months: higher, debt_ratio: lower}
+    efficiency:
+      weight: 0.30
+      metrics: {program_share: higher, fundraising_cost: lower}
+    stability:
+      weight: 0.20
+      metrics: {revenue_change: lower}
+    transparency:
+      weight: 0.20
+      metrics: {transparency: higher}
+  caps:               # extreme values are capped before ranking (no silent zeros, no runaway values)
+    reserves_months: [-12, 60]
+    debt_ratio: [0, 1.5]
+    program_share: [0, 1]
+    fundraising_cost: [0, 2]
+    revenue_change: [0, 2]
+    transparency: [0, 1]
+  peer_min_size: 30   # NTEE major group x size band; smaller groups fall back to the size band alone
+  min_coverage: 0.6   # share of pillar weight with data needed to publish a score
+  filing_deadline_months: 10.5   # 4.5 months + 6-month automatic extension
+  fx_usd_per_gbp: 1.28
+  size_bands: [0, 500000, 5000000, 50000000]
+  size_labels: ["S <$0.5m", "M $0.5-5m", "L $5-50m", "XL >$50m"]
+company:
+  pillars:
+    carbon_intensity: {weight: 0.35, metrics: {intensity_t_per_musd: lower}}
+    emissions_trend: {weight: 0.25, metrics: {emissions_change: lower}}
+    climate_target: {weight: 0.20, metrics: {sbti_points: higher}}
+    disclosure: {weight: 0.20, metrics: {disclosure_points: higher}}
+  caps:
+    intensity_t_per_musd: [0, 20000]
+    emissions_change: [-0.9, 2]
+    sbti_points: [0, 100]
+    disclosure_points: [0, 100]
+  fixed_scale: [sbti_points, disclosure_points]   # already on 0-100, not ranked
+  peer_min_size: 10   # sector; smaller sectors are ranked against all companies
+  min_coverage: 0.6
+  sbti_points: {"Validated Targets": 100, "Targets Set": 100, "Commitment to Set Targets": 50}
